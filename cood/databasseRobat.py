@@ -11,66 +11,130 @@ DB_HOST = "localhost"
 DB_PORT = "5432"  # پورت پیش‌فرض PostgreSQL
 
 
-def connect_db():
-    try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-        print(" verbindung an databasse war erfolgreich")
-        return conn
-    except Exception as e:
-        print(f" gibt problem für verbindung an databasse : {e}")
-        return None
-    
+class DatabaseManager:
+    def __init__(self):
+        self.conn = self.connect_db()
+        self.create_tables()
 
-    # این یک تابع است برای ایجاد جدول
-
-def create_table():
-    conn = connect_db()
-    if conn:
-        cur = conn.cursor()
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                telegram_id BIGINT UNIQUE NOT NULL,
-                username TEXT,
-                full_name TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        ''')
-        conn.commit()
-        cur.close()
-        conn.close()
-        print("Tabelle ist erfolgreich erstellt ")
-
-
-
-#if __name__ == "__main__":
-    #create_table()
-
-
-
-
-# تابع ای برای ‌ذخییره اطلاعات کاربر
-
-def add_user(telegram_id, username, full_name):
-    conn = connect_db()
-    if conn:
-        cur = conn.cursor()
+    def connect_db(self):
+        """ اتصال به دیتابیس """
         try:
-            cur.execute('''
-                INSERT INTO users (telegram_id, username, full_name)
-                VALUES (%s, %s, %s)
-                ON CONFLICT (telegram_id) DO NOTHING;
-            ''', (telegram_id, username, full_name))
-            conn.commit()
-            print(f" user {full_name} erfolgreich user hinzugefügt")
+            conn = psycopg2.connect(
+                dbname=DB_NAME,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                host=DB_HOST,
+                port=DB_PORT
+            )
+            print("✅ Verbindung zur Datenbank war erfolgreich!")
+            return conn
         except Exception as e:
-            print(f" problem für user hinzufügen {e}")
-        finally:
+            print(f"❌ Fehler bei der Verbindung zur Datenbank: {e}")
+            return None
+
+    def create_tables(self):
+        """ ایجاد جداول مورد نیاز در دیتابیس """
+        if self.conn:
+            cur = self.conn.cursor()
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    telegram_id BIGINT UNIQUE NOT NULL,
+                    username TEXT,
+                    full_name TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS marketers (
+                    id SERIAL PRIMARY KEY,
+                    telegram_id BIGINT UNIQUE NOT NULL,
+                    username TEXT,
+                    full_name TEXT,
+                    national_id TEXT UNIQUE NOT NULL,
+                    phone_number TEXT NOT NULL,
+                    location TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+
+            cur.execute('''
+                CREATE TABLE IF NOT EXISTS products (
+                    id SERIAL PRIMARY KEY,
+                    marketer_id BIGINT REFERENCES marketers(telegram_id) ON DELETE CASCADE,
+                    product_name TEXT NOT NULL,
+                    price TEXT NOT NULL,
+                    description TEXT,
+                    packaging TEXT,
+                    image_url TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ''')
+
+            self.conn.commit()
             cur.close()
-            conn.close()
+            print("✅ Tabellen erfolgreich erstellt!")
+
+    def add_user(self, telegram_id, username, full_name):
+        """ افزودن کاربر جدید به دیتابیس """
+        if self.conn:
+            cur = self.conn.cursor()
+            try:
+                cur.execute('''
+                    INSERT INTO users (telegram_id, username, full_name)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (telegram_id) DO NOTHING;
+                ''', (telegram_id, username, full_name))
+                self.conn.commit()
+                print(f"✅ User {full_name} erfolgreich hinzugefügt")
+            except Exception as e:
+                print(f"❌ Problem beim Hinzufügen des Users: {e}")
+            finally:
+                cur.close()
+
+    def add_marketer(self, telegram_id, username, full_name, national_id, phone_number, location):
+        """ ثبت بازاریاب جدید """
+        if self.conn:
+            cur = self.conn.cursor()
+            try:
+                cur.execute('''
+                    INSERT INTO marketers (telegram_id, username, full_name, national_id, phone_number, location)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (telegram_id) DO NOTHING;
+                ''', (telegram_id, username, full_name, national_id, phone_number, location))
+                self.conn.commit()
+                print(f"✅ بازاریاب {full_name} با موفقیت اضافه شد")
+            except Exception as e:
+                print(f"❌ خطا در ثبت بازاریاب: {e}")
+            finally:
+                cur.close()
+
+    def add_product(self, marketer_id, product_name, price, description, packaging, image_url):
+        """ اضافه کردن محصول جدید برای بازاریاب """
+        if self.conn:
+            cur = self.conn.cursor()
+            try:
+                cur.execute('''
+                    INSERT INTO products (marketer_id, product_name, price, description, packaging, image_url)
+                    VALUES (%s, %s, %s, %s, %s, %s);
+                ''', (marketer_id, product_name, price, description, packaging, image_url))
+                self.conn.commit()
+                print(f"✅ محصول {product_name} با موفقیت اضافه شد")
+            except Exception as e:
+                print(f"❌ خطا در ثبت محصول: {e}")
+            finally:
+                cur.close()
+
+    def get_all_marketers(self):
+        """ دریافت لیست تمام بازاریاب‌ها """
+        if self.conn:
+            cur = self.conn.cursor()
+            cur.execute("SELECT telegram_id FROM marketers")
+            marketers = cur.fetchall()
+            cur.close()
+            return [m[0] for m in marketers]  # فقط آی‌دی تلگرام را برمی‌گرداند
+        return []
+
+# ایجاد یک نمونه از دیتابیس برای استفاده در برنامه اصلی
+db_manage = DatabaseManager()
