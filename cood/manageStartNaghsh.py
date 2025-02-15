@@ -14,7 +14,7 @@ async def start_handler(message: Message):
     db_manage.add_user(user_id, username, full_name)  # ذخیره کاربر در دیتابیس
 
     await message.answer(f"سلام {full_name}! خوش آمدید.\n\n آیا مایلید به عنوان بازاریاب ثبت‌نام کنید؟", 
-                         reply_markup=role_selection_keyboard )
+                     reply_markup=role_selection_keyboard)
 
 async def role_selection(callback: CallbackQuery):
     if callback.data == "register_marketer":
