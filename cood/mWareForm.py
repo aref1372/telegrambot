@@ -3,6 +3,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, PhotoSize
 import databasseRobat
+from databasseRobat import db_manage
+from aiogram.filters.command import Command
 
 class ProductForm(StatesGroup):
     photo = State()
@@ -38,7 +40,7 @@ async def process_description(message: Message, state: FSMContext):
 
 async def process_packaging(message: Message, state: FSMContext):
     product_data = await state.get_data()
-    databasseRobat.add_product(
+    db_manage.add_product(
         message.from_user.id, product_data["photo"], product_data["name"], product_data["price"], 
         product_data["description"], product_data["packaging"]
     )
@@ -46,7 +48,7 @@ async def process_packaging(message: Message, state: FSMContext):
     await state.clear()
 
 def register_product_handlers(dp: Dispatcher):
-    dp.message.register(start_product_submission, commands=["add_product"])
+    dp.message.register(start_product_submission, Command("add_product"))
     dp.message.register(process_photo, ProductForm.photo)
     dp.message.register(process_name, ProductForm.name)
     dp.message.register(process_price, ProductForm.price)

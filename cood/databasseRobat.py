@@ -33,7 +33,7 @@ class DatabaseManager:
             return None
 
     def create_tables(self):
-        """ ایجاد جداول مورد نیاز در دیتابیس """
+        # ایجاد جداول مورد نیاز در دیتابیس 
         if self.conn:
             cur = self.conn.cursor()
             cur.execute('''
@@ -77,7 +77,7 @@ class DatabaseManager:
             print("✅ Tabellen erfolgreich erstellt!")
 
     def add_user(self, telegram_id, username, full_name):
-        """ افزودن کاربر جدید به دیتابیس """
+        # افزودن کاربر جدید به دیتابیس 
         if self.conn:
             cur = self.conn.cursor()
             try:
@@ -94,7 +94,7 @@ class DatabaseManager:
                 cur.close()
 
     def add_marketer(self, telegram_id, username, full_name, national_id, phone_number, location):
-        """ ثبت بازاریاب جدید """
+        # ثبت بازاریاب جدید 
         if self.conn:
             cur = self.conn.cursor()
             try:
@@ -104,14 +104,14 @@ class DatabaseManager:
                     ON CONFLICT (telegram_id) DO NOTHING;
                 ''', (telegram_id, username, full_name, national_id, phone_number, location))
                 self.conn.commit()
-                print(f"✅ بازاریاب {full_name} با موفقیت اضافه شد")
+                print(f"✅Bazaryab {full_name} Erfolgreich hinzugefgt ")
             except Exception as e:
-                print(f"❌ خطا در ثبت بازاریاب: {e}")
+                print(f"❌ Error Bazaryab kann nicht hinzufügen {e}")
             finally:
                 cur.close()
 
     def add_product(self, marketer_id, product_name, price, description, packaging, image_url):
-        """ اضافه کردن محصول جدید برای بازاریاب """
+        # اضافه کردن محصول جدید برای بازاریاب 
         if self.conn:
             cur = self.conn.cursor()
             try:
@@ -120,14 +120,14 @@ class DatabaseManager:
                     VALUES (%s, %s, %s, %s, %s, %s);
                 ''', (marketer_id, product_name, price, description, packaging, image_url))
                 self.conn.commit()
-                print(f"✅ محصول {product_name} با موفقیت اضافه شد")
+                print(f" Produkt  {product_name} ist erfolgreich hinzugefügt ")
             except Exception as e:
-                print(f"❌ خطا در ثبت محصول: {e}")
+                print(f"❌ Error produkt kann nicht hinzu {e}")
             finally:
                 cur.close()
 
     def get_all_marketers(self):
-        """ دریافت لیست تمام بازاریاب‌ها """
+        # دریافت لیست تمام بازاریاب‌ها 
         if self.conn:
             cur = self.conn.cursor()
             cur.execute("SELECT telegram_id FROM marketers")
