@@ -1,10 +1,12 @@
+# mWareForm.py
 from aiogram import Dispatcher
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, PhotoSize
+from aiogram.filters.command import Command
 import databasseRobat
 from databasseRobat import db_manage
-from aiogram.filters.command import Command
+from aiogram import F
 
 class ProductForm(StatesGroup):
     photo = State()
@@ -40,17 +42,22 @@ async def process_description(message: Message, state: FSMContext):
 
 async def process_packaging(message: Message, state: FSMContext):
     product_data = await state.get_data()
+    # تنظیم ترتیب پارامترها مطابق با متد add_product:
     db_manage.add_product(
-        message.from_user.id, product_data["photo"], product_data["name"], product_data["price"], 
-        product_data["description"], product_data["packaging"]
+        message.from_user.id, 
+        product_data["name"], 
+        product_data["price"], 
+        product_data["description"], 
+        product_data["packaging"], 
+        product_data["photo"]
     )
     await message.answer("✅ محصول شما با موفقیت ذخیره شد!")
     await state.clear()
 
 def register_product_handlers(dp: Dispatcher):
     dp.message.register(start_product_submission, Command("add_product"))
-    dp.message.register(process_photo, ProductForm.photo)
-    dp.message.register(process_name, ProductForm.name)
-    dp.message.register(process_price, ProductForm.price)
-    dp.message.register(process_description, ProductForm.description)
-    dp.message.register(process_packaging, ProductForm.packaging)
+    dp.message.register(process_photo, F.state == ProductForm.photo)
+    dp.message.register(process_name, F.state == ProductForm.name)
+    dp.message.register(process_price, F.state == ProductForm.price)
+    dp.message.register(process_description, F.state == ProductForm.description)
+    dp.message.register(process_packaging, F.state == ProductForm.packaging)

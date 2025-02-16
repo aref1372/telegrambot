@@ -1,7 +1,7 @@
+# databasseRobat.py
 #-*- coding: utf-8 -*-
 
 import psycopg2
-
 
 # اطلاعات اتصال به دیتابیس
 DB_NAME = "TelegramBotIR98"
@@ -9,7 +9,6 @@ DB_USER = "bot-ir-98"
 DB_PASSWORD = "13729322!!"
 DB_HOST = "localhost"
 DB_PORT = "5432"  # پورت پیش‌فرض PostgreSQL
-
 
 class DatabaseManager:
     def __init__(self):
@@ -45,7 +44,6 @@ class DatabaseManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             ''')
-
             cur.execute('''
                 CREATE TABLE IF NOT EXISTS marketers (
                     id SERIAL PRIMARY KEY,
@@ -58,7 +56,6 @@ class DatabaseManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             ''')
-
             cur.execute('''
                 CREATE TABLE IF NOT EXISTS products (
                     id SERIAL PRIMARY KEY,
@@ -71,7 +68,6 @@ class DatabaseManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             ''')
-
             self.conn.commit()
             cur.close()
             print("✅ Tabellen erfolgreich erstellt!")
@@ -104,9 +100,9 @@ class DatabaseManager:
                     ON CONFLICT (telegram_id) DO NOTHING;
                 ''', (telegram_id, username, full_name, national_id, phone_number, location))
                 self.conn.commit()
-                print(f"✅Bazaryab {full_name} Erfolgreich hinzugefgt ")
+                print(f"✅ Bazaryab {full_name} erfolgreich hinzugefügt")
             except Exception as e:
-                print(f"❌ Error Bazaryab kann nicht hinzufügen {e}")
+                print(f"❌ Error: Bazaryab kann nicht hinzugefügt werden: {e}")
             finally:
                 cur.close()
 
@@ -120,9 +116,9 @@ class DatabaseManager:
                     VALUES (%s, %s, %s, %s, %s, %s);
                 ''', (marketer_id, product_name, price, description, packaging, image_url))
                 self.conn.commit()
-                print(f" Produkt  {product_name} ist erfolgreich hinzugefügt ")
+                print(f"✅ Produkt {product_name} ist erfolgreich hinzugefügt")
             except Exception as e:
-                print(f"❌ Error produkt kann nicht hinzu {e}")
+                print(f"❌ Error: Produkt kann nicht hinzugefügt werden: {e}")
             finally:
                 cur.close()
 

@@ -1,13 +1,4 @@
-"""from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
-role_selection_keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="🎭 ثبت‌نام به عنوان بازاریاب")],
-        [KeyboardButton(text="🏭 ثبت‌نام به عنوان تأمین‌کننده")],
-    ],
-    resize_keyboard=True 
-) """
-
+# keybord.py
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 # تعریف دکمه‌ها با استفاده از مقداردهی به صورت استاندارد
@@ -16,6 +7,6 @@ not_interested_button = InlineKeyboardButton(text="مشتاق نیستم", callb
 
 # ایجاد کیبورد و اضافه کردن دکمه‌ها
 role_selection_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [register_button],  # دکمه اول
-    [not_interested_button]  # دکمه دوم
+    [register_button],
+    [not_interested_button]
 ])
