@@ -11,16 +11,22 @@ from keybord import role_selection_keyboard
 import mAnmeldungFormBazaryab
 import mWareForm
 from mWareForm import register_product_handlers
-
-# تنظیم Storage برای FSM
+from aiogram.fsm.storage.memory import MemoryStorage
 storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
+
+async def catch_all(message: Message):
+    print("Catch-all received message:", message.text)
+
+dp.message.register(catch_all)
+
 
 # توکن ربات (توکن واقعی خود را جایگزین کنید)
 TOKEN = "8161913266:AAG6Ls1vcNtXEk53p9vrMTDAaP93UNn0Dsg"
 
 # ایجاد نمونه‌های Bot و Dispatcher
 bot = Bot(token=TOKEN)
-dp = Dispatcher(storage=storage)
+
 
 async def start_handler(message: Message):
     user_id = message.from_user.id
@@ -66,7 +72,7 @@ async def main():
     register_start_handlers(dp)
     register_marketer_fsm_handlers(dp)
     register_product_handlers(dp)  # از mWareForm
-
+    
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
